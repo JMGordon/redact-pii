@@ -24,7 +24,6 @@
   "author": "Christian Theilemann <christian@solvvy.com>",
   "license": "MIT",
   "dependencies": {
-    "@google-cloud/dlp": "~0.11.0",
     "lodash": "^4.17.11"
   },
   "devDependencies": {

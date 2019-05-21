@@ -56,9 +56,6 @@ redactor.redactAsync('Hi David Johnson, Please give me a call at 555-555-5555').
   - url
   - digits
   - > **NOTE**: the built-in redaction rules are mostly applicable for identifying (US-)english PII.
-    > Consider using custom patterns or [Google Cloud DLP](https://cloud.google.com/dlp/) if you have non-english PII to redact.
-- ability to add custom redaction regex patterns and complete custom redaction functions (both sync and async)
-- ability to use [Google Data Loss Prevention ](https://cloud.google.com/dlp/) as advanced custom redactor
 
 ## Advanced usage and features
 
@@ -157,68 +154,8 @@ const redactor = new SyncRedactor({
 });
 ```
 
-### Use Google Data Loss Prevention
-
-[Google Data Loss Prevention (DLP)](https://cloud.google.com/dlp/) has an extensive rule set to identify and redact PII that goes beyond just simple regex patterns. Consider using DLP in-addition to the built-in patterns of redact-pii for high value / sensitive data applications.
-Also we strongly advice on using DLP if you have to redact non-english data since redact-pii's built-in patterns cover mostly US english patterns only and have no support for non-latin characters, whereas DLP has extensive support for international IDs, Chinese and Korean characters etc..
-`redact-pii` provides a small wrapper `GoogleDLPRedactor` around DLP that can be used seperately or in conjunction with redact-pii's built-in patterns.
-Note that Google Cloud DLP already also provides a node.js library (https://www.npmjs.com/package/@google-cloud/dlp) that can be used directly to redact data. You have to decide yourself if you want to use the `GoogleDLPRedactor` wrapper or `@google-cloud/dlp` directly. The main differentiators of using `redact-pii` / `GoogleDLPRedactor` are:
-
-- `GoogleDLPRedactor` already instantiates `@google-cloud/dlp` with a bunch of sane defaults and infoTypes
-- redact-pii has a bunch of built-in patterns which can run in addition to DLP infoTypes
-- it is easy to add custom patterns or rules to redact-pii
-- `GoogleDLPRedactor` uses the `.inspectContent` instead of `.deidentifyContent` method of `@google-cloud/dlp` which has a pricing advantage for large scale redaction scenarios since you will be only charged "Inspection Units" and no additional "Transformation Units" (see https://cloud.google.com/dlp/pricing) . redact-pii only uses DLP to `identify` PII but does the replacement `transformation` by itself which saves you some 💰💰💰.
-
-#### Use Google Data Loss Prevention only (this won't make use of redact-pii's built-in regex patterns)
-
-1. Prequesites:
-   You have to have a Google Cloud Project with DLP enabled and you need a _serviceaccount key json-file_ for a service account with the `serviceusage.services.use` permission or `roles/dlp.user` role. For more detailed steps on how to get a valid service account key follow the steps here: https://github.com/googleapis/nodejs-dlp#before-you-begin
-
-2. Set the environment variable `GOOGLE_APPLICATION_CREDENTIALS` and point it to the serviceaccount key. E.g.:
-   `export GOOGLE_APPLICATION_CREDENTIALS=./path/to/my-serviceaccount-key.json`
-
-3. Use redact pii
-
-```js
-const { GoogleDLPRedactor } = require('redact-pii');
-
-const redactor = new GoogleDLPRedactor();
-
-redactor.redactAsync('I live at 123 Park Ave Apt 123 New York City, NY 10002').then(redactedText => {
-  console.log(redactedText);
-  // I live at STREET_ADDRESS US_STATE City, LOCATION ZIPCODE'
-});
-```
-
-#### Use Google DLP AND built-in patterns AND a custom pattern
-
-You can create an `AsyncRedactor` and add a `GoogleDLPRedactor` as custom redactor to the `AsyncRedactor`.
-That way you are combining redact-pii's built-in patterns with Google DLP. The example below additionally adds a custom regexp pattern.
-
-```js
-const { AsyncRedactor, GoogleDLPRedactor } = require('redact-pii');
-
-const redactor = new AsyncRedactor({
-  customRedactors: {
-    before: [
-      new GoogleDLPRedactor(),
-      {
-        regexpPattern: /\b(cat|dog|cow)s?\b/gi,
-        replaceWith: 'ANIMAL'
-      }
-    ]
-  }
-});
-
-redactor.redactAsync('I live at 123 Park Ave Apt 123 New York City, NY 10002 and love cats').then(redactedText => {
-  console.log(redactedText);
-  // I live at STREET_ADDRESS US_STATE City, LOCATION ZIPCODE and love ANIMAL'
-});
-```
-
 ### Contributing
 
 #### Run tests
 
-You can run the tests via `npm run test`. There are are a bunch of tests which require access to Google's DLP API.
-They will only be run if you set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable - otherwise they'll be skipped automatically. You can set it via `GOOGLE_APPLICATION_CREDENTIALS=/path/to/keyfile.json npm test`.
+You can run the tests via `npm run test`.
