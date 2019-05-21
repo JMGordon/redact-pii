@@ -3,7 +3,7 @@ import { AsyncRedactor, SyncRedactor } from '../src';
 const redactor = new SyncRedactor();
 const Redactor = new AsyncRedactor();
 
-describe('index.js', function () {
+describe('index.js', function() {
   type InputAssertionTuple = [string, string, string?];
 
   function TestCase(description: string, thingsToTest: Array<InputAssertionTuple>) {
@@ -14,7 +14,7 @@ describe('index.js', function () {
     });
   }
 
-  TestCase.only = function (description: string, thingsToTest: Array<InputAssertionTuple>) {
+  TestCase.only = function(description: string, thingsToTest: Array<InputAssertionTuple>) {
     it.only(description, async () => {
       for (const [input, syncOutput] of thingsToTest) {
         expect(redactor.redact(input)).toBe(syncOutput);
@@ -22,13 +22,13 @@ describe('index.js', function () {
     });
   };
 
-  it('should be speedy', async function () {
+  it('should be speedy', async function() {
     for (let i = 0; i < 100; i++) {
       redactor.redact('hi I had a quick question about using the service');
     }
   }, 100);
 
-  it('should be speedy even with lots of newlines', async function () {
+  it('should be speedy even with lots of newlines', async function() {
     let text =
       'foo\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nbar';
     redactor.redact(text);
@@ -167,12 +167,12 @@ describe('index.js', function () {
     ['user: thislibrary\npass: 1$d0P3!', 'USERNAME\nPASSWORD']
   ]);
 
-  it('should respect a custom string replacement', function () {
+  it('should respect a custom string replacement', function() {
     let customRedactor = new SyncRedactor({ globalReplaceWith: 'REDACTED' });
     expect(customRedactor.redact('my ip: 10.1.1.235.')).toBe('my ip: REDACTED.');
   });
 
-  it('should accept new patterns', function () {
+  it('should accept new patterns', function() {
     let redactor = new SyncRedactor({
       customRedactors: { after: [{ regexpPattern: /\b(cat|dog|cow)s?\b/gi, replaceWith: 'ANIMAL' }] }
     });
@@ -199,12 +199,4 @@ describe('index.js', function () {
     ['before http://www.example.com/foo/bar?foo=bar#/foo/bar after', 'before URL after'],
     ['My homepage is http://example.com\nAnd that is that.', 'My homepage is URL\nAnd that is that.']
   ]);
-
-  it('[integration] should redact non english text', async function () {
-    await expect(Redactor.redactAsync('我的名字是王')).resolves.toBe('我的名字是王');
-    await expect(Redactor.redactAsync('我的卡号是 1234')).resolves.toBe('PERSON_NAME是 DIGITS');
-    await expect(Redactor.redactAsync('我的电话是 444-332-343')).resolves.toBe(
-      '我的电话是 PHONE_NUMBER'
-    );
-  });
 });

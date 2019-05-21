@@ -1,6 +1,6 @@
 {
   "name": "redact-pii-fork",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "Remove personally identifiable information from text. Fork of redact-pii.",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -8,9 +8,8 @@
     "build": "del lib && tsc --pretty",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run verify_all && npm run build",
-    "verify_all": "npm run typecheck && npm test && npm run test_prettier && changelog-verify CHANGELOG.md",
+    "verify_all": "npm run typecheck && npm test",
     "test": "jest",
-    "test_prettier": "prettier './+(src|test)/**/*.+(js|ts|tsx)' --list-different",
     "prettier": "prettier './+(src|test)/**/*.+(js|ts|tsx)' --write",
     "version": "version-changelog CHANGELOG.md && changelog-verify CHANGELOG.md && git add CHANGELOG.md"
   },
